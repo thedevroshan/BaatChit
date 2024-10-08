@@ -1,6 +1,8 @@
 import express from 'express'
-import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
+
+// Config File
+import { configuration } from './config/config.js'
 
 // Database
 import { connectMongoDB } from './db/connectMongoDB.js'
@@ -11,7 +13,6 @@ import authRoute from './routes/AuthRoute.js'
 
 const app = express()
 
-dotenv.config()
 
 connectMongoDB()
 
@@ -25,6 +26,6 @@ app.use('/api/auth', authRoute)
 
 
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running at  ${process.env.HOST}${process.env.PORT}`)
+app.listen(configuration.PORT, () => {
+  console.log(`Server is running at  ${configuration.HOST}${configuration.PORT}`)
 })

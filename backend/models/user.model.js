@@ -27,7 +27,7 @@ const userSchema = new Schema({
     friends: {
         type: [mongoose.Schema.Types.ObjectId],
     },
-    verfied: {
+    verified: {
         type: Boolean,
         default: false
     },
