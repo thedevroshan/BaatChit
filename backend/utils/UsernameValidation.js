@@ -9,5 +9,5 @@ export const UesrnameValidation = [
       return true;
     })
     .isLowercase()
-    .withMessage('Username should in lowercase')
+    .withMessage('Username should be in lowercase')
 ]

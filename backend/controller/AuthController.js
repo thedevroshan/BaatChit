@@ -37,7 +37,7 @@ export const register = async (req, res) => {
         const salt = await bcryptjs.genSalt(parseInt(process.env.SALT_LENGHT))
         const hashedPassword = await bcryptjs.hash(password, salt)
 
-        await CreateSendOTP(email, configuration.OTP_EXPIRATION_MINUTE)
+        await CreateSendOTP(email, configuration.OTP_EXPIRATION_MINUTE, 'Email Verification', `OTP For Email Verification. Not this otp will be expired in ${configuration.OTP_EXPIRATION_MINUTE} minute`, null)
 
         await User.create({
             username,
@@ -49,7 +49,7 @@ export const register = async (req, res) => {
         res.status(200).json({ok: true, msg: 'Registered Successfully'})
 
     } catch (error) {
-        if(configuration.NODE_ENV === 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         return res.status(500).send('Server Error')
@@ -79,10 +79,10 @@ export const verifyEmail = async (req, res) => {
         await User.findOneAndUpdate({email: isOTPExists.email},{$set:{verified: true}})
         await OTP.findOneAndDelete({otp})
 
-        const token = await CreateJWTToken({userId: "isUserExists._id"}, configuration.JWT_SECRET)
+        const token = await CreateJWTToken({userId: isUserExists._id}, configuration.JWT_SECRET)
         res.cookie('token', token)
     } catch (error) {
-        if(configuration.NODE_ENV === 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         return res.status(500).send('Server Error')
@@ -92,13 +92,13 @@ export const verifyEmail = async (req, res) => {
 // Resend OTP
 export const resendOTP = async (req, res) => {
     try {
-        const isSent = await CreateSendOTP(req.body.email, configuration.OTP_EXPIRATION_MINUTE)
+        const isSent = await CreateSendOTP(req.body.email, configuration.OTP_EXPIRATION_MINUTE, 'Email Verification', `OTP For Email Verification. Not this otp will be expired in ${configuration.OTP_EXPIRATION_MINUTE} minute`, null)
         if(!isSent){
             return res.status(400).json({ok: false, msg: 'Unable to sent otp'})
         }
         res.status(200).json({ok: true, msg: 'OTP Sent'})        
     } catch (error) {
-        if(configuration.NODE_ENV === 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         return res.status(500).send('Server Error')
@@ -124,7 +124,7 @@ export const login = async (req,res) => {
         const token = await CreateJWTToken({userId: "isUserExists._id"}, configuration.JWT_SECRET)
         res.cookie('token', token)
     } catch (error) {
-        if(configuration.NODE_ENV === 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         return res.status(500).send('Server Error')
@@ -136,7 +136,7 @@ export const logout = async (req,res) => {
     try {
         res.cookie('token', '')
     } catch (error) {
-        if(configuration.NODE_ENV === 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         return res.status(500).send('Server Error')

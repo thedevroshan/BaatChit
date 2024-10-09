@@ -11,7 +11,7 @@ export const CreateJWTToken = async (userId, jwt_secret) => {
             return token
         }
     } catch (error) {
-        if(configuration.NODE_ENV == 'development'){
+        if(configuration.IS_DEV_ENV){
             return console.log(error)
         }
         throw new Error('Some Error occurred in JWTToken.js File')
