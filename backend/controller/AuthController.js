@@ -6,11 +6,15 @@ import bcryptjs from 'bcryptjs';
 import { User } from "../models/user.model.js"
 import { OTP } from '../models/otp.model.js';
 
-// Utils
-import { CreateSendOTP } from '../utils/CreateSendOTP.js';
+// Configuration File
 import { configuration } from '../config/config.js';
 
+// Utils
+import { CreateSendOTP } from '../utils/CreateSendOTP.js';
+import { CreateJWTToken } from '../utils/JWTToken.js';
 
+
+// Register
 export const register = async (req, res) => {
     try {
         const { username, name, email, password } = req.body;
@@ -52,6 +56,7 @@ export const register = async (req, res) => {
     }
 }
 
+// Verfiy Email
 export const verifyEmail = async (req, res) => {
     try {
         const {otp} = req.body;
@@ -73,8 +78,9 @@ export const verifyEmail = async (req, res) => {
 
         await User.findOneAndUpdate({email: isOTPExists.email},{$set:{verified: true}})
         await OTP.findOneAndDelete({otp})
-        res.status(200).json({ok: true, msg: 'Verified Successfully'})
-        
+
+        const token = await CreateJWTToken({userId: "isUserExists._id"}, configuration.JWT_SECRET)
+        res.cookie('token', token)
     } catch (error) {
         if(configuration.NODE_ENV === 'development'){
             return console.log(error)
@@ -83,7 +89,7 @@ export const verifyEmail = async (req, res) => {
     }
 }
 
-
+// Resend OTP
 export const resendOTP = async (req, res) => {
     try {
         const isSent = await CreateSendOTP(req.body.email, configuration.OTP_EXPIRATION_MINUTE)
@@ -99,9 +105,36 @@ export const resendOTP = async (req, res) => {
     }
 }
 
+// Login
 export const login = async (req,res) => {
     try {
-        
+        const { email_or_username, password } = req.body;
+
+        const isUserExists = await User.findOne({email: email_or_username}) || await User.findOne({username: email_or_username})
+
+        if(!isUserExists){
+            return res.status(404).json({ok: false, msg: 'Email or Username not found'})
+        }
+
+        const isPassword = await bcryptjs.compare(password, isUserExists.password)
+        if(!isPassword){
+            return res.status(400).json({ok: false, msg: 'Incorrect Password'})
+        }
+
+        const token = await CreateJWTToken({userId: "isUserExists._id"}, configuration.JWT_SECRET)
+        res.cookie('token', token)
+    } catch (error) {
+        if(configuration.NODE_ENV === 'development'){
+            return console.log(error)
+        }
+        return res.status(500).send('Server Error')
+    }
+}
+
+// Logout
+export const logout = async (req,res) => {
+    try {
+        res.cookie('token', '')
     } catch (error) {
         if(configuration.NODE_ENV === 'development'){
             return console.log(error)

@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router()
 
 // Controllers
-import { register, verifyEmail,resendOTP } from '../controller/AuthController.js'
+import { register, verifyEmail,resendOTP, login } from '../controller/AuthController.js'
 
 // Utils
 import { EmailValidation } from '../utils/EmailValidation.js'
@@ -18,6 +18,9 @@ router.post('/verifyemail', verifyEmail)
 
 // Resend OTP Route
 router.post('/resendotp', resendOTP)
+
+// Login Route
+router.post('/login', login)
 
 
 export default router;

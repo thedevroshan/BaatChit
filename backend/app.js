@@ -1,5 +1,6 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 
 // Config File
 import { configuration } from './config/config.js'
@@ -17,6 +18,12 @@ const app = express()
 connectMongoDB()
 
 // Middlewares
+app.use(cors({
+  origin: `${configuration.FRONTEND_HOST}${configuration.FRONTEND_PORT}`,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+  
+}))
 app.use(express.json())
 app.use(cookieParser())
 
