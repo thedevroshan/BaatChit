@@ -12,6 +12,7 @@ import { configuration } from '../config/config.js';
 // Utils
 import { CreateSendOTP } from '../utils/CreateSendOTP.js';
 import { CreateJWTToken } from '../utils/JWTToken.js';
+import { ValidateOTP } from '../utils/ValidateOTP.js';
 
 
 // Register
@@ -60,18 +61,14 @@ export const register = async (req, res) => {
 export const verifyEmail = async (req, res) => {
     try {
         const {otp} = req.body;
-        
-        const isOTPExists = await OTP.findOne({otp})
-        if(!isOTPExists){
-            return res.status(404).json({ok: false, msg: 'OTP Not Found'})
+
+        const isValidated = await ValidateOTP(otp)
+
+        if(!isValidated.ok){
+            return res.status(400).json({ok: false, msg: isValidated.msg})
         }
 
-        if(Date.now() > isOTPExists.expiration){
-            await OTP.findOneAndDelete({otp})
-            return res.status(400).json({ok: false, msg: 'OTP Expired'})
-        }
-
-        const isUserExists = await User.findOne({email: isOTPExists.email})
+        const isUserExists = await User.findOne({email: isValidated.email})
         if(!isUserExists){
             return res.status(404).json({ok: false, msg: 'User not found'})
         }
