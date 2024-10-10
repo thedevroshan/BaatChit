@@ -22,7 +22,7 @@ export const register = async (req, res) => {
 
         const result = validationResult(req)
         if(!result.isEmpty()){
-            return res.status(400).json({ok: false, msg: result.array()})
+            return res.status(400).json({ok: false, msg: result.array()[0].msg})
         }
 
         const isExistingUsername = await User.findOne({username})

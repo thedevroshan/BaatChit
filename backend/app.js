@@ -11,6 +11,7 @@ import { connectMongoDB } from './db/connectMongoDB.js'
 // Routes
 import authRoute from './routes/AuthRoute.js'
 import userRoute from './routes/UserRoute.js'
+import serverRoute from './routes/ServerRoute.js'
 
 
 const app = express()
@@ -31,8 +32,12 @@ app.use(cookieParser())
 // API
 // Authentication
 app.use('/api/auth', authRoute)
+
 // User
 app.use('/api/user', userRoute)
+
+// Server
+app.use('/api/server', serverRoute)
 
 
 
