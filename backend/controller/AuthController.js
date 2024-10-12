@@ -73,10 +73,13 @@ export const verifyEmail = async (req, res) => {
             return res.status(404).json({ok: false, msg: 'User not found'})
         }
 
-        await User.findOneAndUpdate({email: isOTPExists.email},{$set:{verified: true}})
+        await User.findOneAndUpdate({email: isValidated.email},{$set:{verified: true}})
         await OTP.findOneAndDelete({otp})
 
         const token = await CreateJWTToken({userId: isUserExists._id}, configuration.JWT_SECRET)
+        if(configuration.IS_DEV_ENV){
+            return res.status(200).json({ok: true, msg: 'Logged In', data: token})
+        }
         res.cookie('token', token)
     } catch (error) {
         if(configuration.IS_DEV_ENV){
@@ -118,7 +121,15 @@ export const login = async (req,res) => {
             return res.status(400).json({ok: false, msg: 'Incorrect Password'})
         }
 
-        const token = await CreateJWTToken({userId: "isUserExists._id"}, configuration.JWT_SECRET)
+        if(!isUserExists.verified){
+            await CreateSendOTP(isUserExists.email, configuration.OTP_EXPIRATION_MINUTE, 'Email Verification', `OTP For Email Verification. Not this otp will be expired in ${configuration.OTP_EXPIRATION_MINUTE} minute`, null)
+            return res.status(400).json({ok: false, msg: 'Your email is not verified. We have send you the otp to verify.Please Check your inbox or spam folder'})
+        }
+
+        const token = await CreateJWTToken({userId: isUserExists._id}, configuration.JWT_SECRET)
+        if(configuration.IS_DEV_ENV){
+            return res.status(200).json({ok: true, msg: 'Logged In', data: token})
+        }
         res.cookie('token', token)
     } catch (error) {
         if(configuration.IS_DEV_ENV){

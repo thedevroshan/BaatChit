@@ -23,7 +23,7 @@ export const ValidateOTP = async (otp) => {
         return {
             ok: true,
             msg: 'OTP Validated',
-            user: isOTPExists.email
+            email: isOTPExists.email
         }
     } catch (error) {
         if (configuration.IS_DEV_ENV) {

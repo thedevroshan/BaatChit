@@ -23,8 +23,14 @@ const serverSchema = new Schema({
     roles: {
         type: Map,
         of: String,
+        default: [{
+            'role': String,
+            'color': String
+        }],
+        _id: false,
         default: {
-            'member': '#FFFFFF'
+            'role': 'member',
+            'color': '#FFFFFF'
         }
     },
     roles_assigned: {
@@ -36,13 +42,19 @@ const serverSchema = new Schema({
         
     },
     server_icon: {
-        type: String
+        type: String,
+        default: ''
     },
     description: {
-        type: String
+        type: String,
+        default: ''
     },
     links: {
-        type: String
+        type: [{
+            'name': String,
+            'url': String
+        }],
+        _id: false,
     },
 }, {timestamps: true})
 
