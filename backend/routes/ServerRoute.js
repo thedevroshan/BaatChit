@@ -12,7 +12,10 @@ import {
     updateDescription,
     updateHandle,
     updateHandleRequest,
-    addServerLinks
+    addServerLinks,
+    createRole,
+    createCategory,
+    createChannel
 } from "../controller/ServerController.js";
 
 
@@ -33,6 +36,15 @@ router.put('/update/handle', isLoggedIn, updateHandle)
 
 // Add Server Links Route: Login Required
 router.post('/add/links', isLoggedIn, addServerLinks)
+
+// Create a Role: Login Required
+router.post('/create_role', isLoggedIn, createRole)
+
+// Create a Category: Login Required
+router.post('/create_category', isLoggedIn, createCategory)
+
+// Create a Channel: Login Required
+router.post('/create_channel', isLoggedIn, createChannel)
 
 
 export default router;

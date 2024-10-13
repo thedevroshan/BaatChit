@@ -2,6 +2,9 @@ import { configuration } from "../config/config.js";
 
 // Models
 import { Server } from "../models/server.model.js";
+import { Category } from '../models/category.model.js'
+import { Channel } from "../models/channel.model.js"
+import { User } from "../models/user.model.js";
 
 // Utils
 import { CreateSendOTP } from '../utils/CreateSendOTP.js'
@@ -22,11 +25,14 @@ export const createServer = async (req, res) => {
             return res.status(400).json({ok: false, msg: 'Server Handle is not available'})
         }
 
-        await Server.create({
+        const isCreated = await Server.create({
             server_name,
             server_handle,
             admin: req.user.id
         })
+
+        await User.findByIdAndUpdate(req.user.id, {$push: {owned_server: isCreated._id}})
+
         res.status(200).json({ok: true, msg: 'Server Created'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
@@ -139,13 +145,13 @@ export const updateDescription = async (req, res) => {
 // Add Server Links
 export const addServerLinks = async (req, res) => {
     try {
-        const {linkObject, server_handle} = req.body;
+        const {name, url, server_handle} = req.body;
 
-        if(linkObject.name == ''){
+        if(name == ''){
             return res.status(400).json({ok: false, msg: 'URL name is required'})
         }
 
-        if(linkObject.url == ''){
+        if(url == ''){
             return res.status(400).json({ok: false, msg: 'URL is required'})
         }
 
@@ -155,8 +161,8 @@ export const addServerLinks = async (req, res) => {
         }
 
         const isAdded = await Server.findOneAndUpdate({server_handle}, {$push: {links: {
-            name: linkObject.name,
-            url: linkObject.url
+            name,
+            url
         }}})
 
         if(!isAdded){
@@ -165,6 +171,105 @@ export const addServerLinks = async (req, res) => {
 
         res.status(200).json({ok: true, msg: 'Links Added Successfully'})
 
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ok: false, msg: 'Server Error'})
+    }
+}
+
+// Create Role
+export const createRole = async (req, res) => {
+    try {
+        const {server_handle, role, color} = req.body
+
+        const isServerExists = await Server.findOne({server_handle})
+        if(!isServerExists){
+            return res.status(400).json({ok: false, msg: 'Server Not Found'})
+        }
+
+        if(role == '' || color == ''){
+            return res.status(400).json({ok: false, msg: 'Role and Color is required'})
+        }
+
+        const isRoleCreated = await Server.findOneAndUpdate({server_handle}, {$push: {roles: {role, color}}})
+        if(!isRoleCreated){
+            return res.status(400).json({ok: false, msg: 'Unable to create role'})
+        }
+        res.status(200).json({ok: true, msg: 'Role Created Successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ok: false, msg: 'Server Error'})
+    }
+}
+
+// Create Category
+export const createCategory = async (req, res)=>{
+    try {
+        const {server_handle, category_name}= req.body;
+
+        const isServerExists = await Server.findOne({server_handle})
+        if(!isServerExists){
+            return res.status(404).json({ok: false, msg: 'Server Not Found'})
+        }
+
+        if(category_name == ''){
+            return res.status(400).json({ok: false, msg: 'Category Name is required'})
+        }
+        
+        const isCreated = await Category.create({
+            server_id: isServerExists._id,
+            category_name
+        })
+
+        if(!isCreated){
+            return res.status(400).json({ok: false, msg: 'Unable to create category'})
+        }
+
+        await isServerExists.updateOne({$push: {categories: isCreated._id}})
+        await isServerExists.save()
+
+        res.status(200).json({ok: true, msg: 'Category created successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ok: false, msg: 'Server Error'})
+    }
+}
+
+// Create Channel
+export const createChannel = async (req, res)=>{
+    try {
+        const {category_id, channel_name, is_private}= req.body;
+
+        const isCategoryExists = await Category.findById(category_id)
+        if(!isCategoryExists){
+            return res.status(404).json({ok: false, msg: 'Category Not Found'})
+        }
+
+        if(channel_name == ''){
+            return res.status(400).json({ok: false, msg: 'Channel Name is required'})
+        }
+        
+        const isCreated = await Channel.create({
+            server_id: isCategoryExists.server_id,
+            category_id,
+            channel_name,
+            is_private
+        })
+
+        if(!isCreated){
+            return res.status(400).json({ok: false, msg: 'Unable to create channel'})
+        }
+
+        await isCategoryExists.updateOne({$push: {channels: isCreated._id}})
+        await isCategoryExists.save()
+
+        res.status(200).json({ok: true, msg: 'Category created successfully'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)

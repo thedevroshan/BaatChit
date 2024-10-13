@@ -1,61 +1,77 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose
+const { Schema } = mongoose;
 
 const serverSchema = new Schema({
     server_name: {
         type: String,
-        required: true
+        required: true,
     },
     server_handle: {
         type: String,
         required: true,
     },
     admin: {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Correct use of ref with ObjectId
+        required: true,
     },
-    channel_groups: {
-        type: [mongoose.Schema.Types.ObjectId]
+    categories: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Category', // Correct use of ref with ObjectId
     },
     members: {
-        type: [mongoose.Schema.Types.ObjectId]
-    },
-    roles: {
-        type: Map,
-        of: String,
-        default: [{
-            'role': String,
-            'color': String
+        type: [{
+            userId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'User' // ref should be on userId, which is an ObjectId
+            },
+            role: [String], // Role can stay as it is, no ref needed
         }],
         _id: false,
-        default: {
-            'role': 'member',
-            'color': '#FFFFFF'
-        }
     },
-    roles_assigned: {
+    roles: {
         type: [{
-            'userId': String,
-            'roles': [String]
+            role: String,
+            color: String,
         }],
-        _id: false
-        
+        _id: false,
+        default: [{ 
+            role: 'member',
+            color: '#FFFFFF',
+        }],
+    },
+    roles_permission: {
+        type: [{
+            role: String,
+            text: Boolean,
+            files: Boolean,
+            manage_account: Boolean,
+            private_channel_access: Boolean,
+            _id: false,
+        }],
+        default: {
+            role: 'member',
+            text: true,
+            files: true,
+            manage_account: false,
+            private_channel_access: false
+        }
     },
     server_icon: {
         type: String,
-        default: ''
+        default: '',
     },
     description: {
         type: String,
-        default: ''
+        default: '',
     },
     links: {
         type: [{
-            'name': String,
-            'url': String
+            name: String,
+            url: String,
+            _id: false,
         }],
-        _id: false,
     },
-}, {timestamps: true})
+}, { timestamps: true });
 
-export const Server = mongoose.model('Server', serverSchema)
+export const Server = mongoose.model('Server', serverSchema);
