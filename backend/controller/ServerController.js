@@ -2,8 +2,6 @@ import { configuration } from "../config/config.js";
 
 // Models
 import { Server } from "../models/server.model.js";
-import { Category } from '../models/category.model.js'
-import { Channel } from "../models/channel.model.js"
 import { User } from "../models/user.model.js";
 
 // Utils
@@ -14,15 +12,15 @@ import { ValidateOTP } from '../utils/ValidateOTP.js'
 // Create Server
 export const createServer = async (req, res) => {
     try {
-        const {server_name, server_handle} = req.body;
+        const { server_name, server_handle } = req.body;
 
-        if(server_name == ''){
-            return res.status(400).json({ok: false, msg: 'Server Name is required'})
+        if (server_name == '') {
+            return res.status(400).json({ ok: false, msg: 'Server Name is required' })
         }
-        
-        const isServerHandleExists = await Server.findOne({server_handle})
-        if(isServerHandleExists){
-            return res.status(400).json({ok: false, msg: 'Server Handle is not available'})
+
+        const isServerHandleExists = await Server.findOne({ server_handle })
+        if (isServerHandleExists) {
+            return res.status(400).json({ ok: false, msg: 'Server Handle is not available' })
         }
 
         const isCreated = await Server.create({
@@ -31,40 +29,40 @@ export const createServer = async (req, res) => {
             admin: req.user.id
         })
 
-        await User.findByIdAndUpdate(req.user.id, {$push: {owned_server: isCreated._id}})
+        await User.findByIdAndUpdate(req.user.id, { $push: { owned_server: isCreated._id } })
 
-        res.status(200).json({ok: true, msg: 'Server Created'})
+        res.status(200).json({ ok: true, msg: 'Server Created' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
 // Update Server Name
 export const updateName = async (req, res) => {
     try {
-        const {server_name, server_handle} = req.body;
-        
-        const isServerExists = await Server.findOne({server_handle})
-        if(!isServerExists){
-            return res.status(400).json({ok: false, msg: 'Server not found'})
+        const { server_name } = req.body;
+
+        const isServerExists = await Server.findOne({ server_handle: req.params.server_handle })
+        if (!isServerExists) {
+            return res.status(400).json({ ok: false, msg: 'Server not found' })
         }
 
-        if(server_name == ''){
-            return res.status(400).json({ok: false, msg: 'Server Name is required'})
+        if (server_name == '') {
+            return res.status(400).json({ ok: false, msg: 'Server Name is required' })
         }
 
 
-        await Server.findOneAndUpdate({server_handle},{$set: {server_name}})
-        
-        res.status(200).json({ok: true, msg: 'Server Name Updated'})
+        await Server.findOneAndUpdate({ server_handle: req.params.server_handle }, { $set: { server_name } })
+
+        res.status(200).json({ ok: true, msg: 'Server Name Updated' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
@@ -73,12 +71,12 @@ export const updateName = async (req, res) => {
 export const updateHandleRequest = async (req, res) => {
     try {
         await CreateSendOTP(null, configuration.OTP_EXPIRATION_MINUTE, 'Username Change', `Here is the otp to change your server handle. Note this otp will be expired in ${configuration.OTP_EXPIRATION_MINUTE} minute`, req.user.id)
-        res.status(200).json({ok: true, msg: 'We have send you the otp to change your server handle.Check your spam or inbox folder'})
+        res.status(200).json({ ok: true, msg: 'We have send you the otp to change your server handle.Check your spam or inbox folder' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
@@ -86,194 +84,246 @@ export const updateHandleRequest = async (req, res) => {
 // Update Server Handle
 export const updateHandle = async (req, res) => {
     try {
-        const {otp, server_handle, new_server_handle} = req.body;
+        const { otp, new_server_handle } = req.body;
 
-        const isServerExists = await Server.findOne({server_handle: new_server_handle})
-        if(isServerExists){
-            return res.status(400).json({ok: false, msg: 'Server Handle Not Available'})
+        const isServerExists = await Server.findOne({ server_handle: new_server_handle })
+        if (isServerExists) {
+            return res.status(400).json({ ok: false, msg: 'Server Handle Not Available' })
         }
 
-        if(!await Server.findOne({server_handle})){
-            return res.status(404).json({ok: false, msg: 'Server Not Found'})
+        if (!await Server.findOne({ server_handle: req.params.server_handle })) {
+            return res.status(404).json({ ok: false, msg: 'Server Not Found' })
         }
 
         const isValidated = await ValidateOTP(otp)
-        
-        if(!isValidated.ok){
-            return res.status(400).json({ok: false, msg: isValidated.msg})
+
+        if (!isValidated.ok) {
+            return res.status(400).json({ ok: false, msg: isValidated.msg })
         }
 
-        if(new_server_handle == ''){
-            return res.status(400).json({ok: false, msg: 'Server Handle is required'})
+        if (new_server_handle == '') {
+            return res.status(400).json({ ok: false, msg: 'Server Handle is required' })
         }
-        
-        await Server.findOneAndUpdate({server_handle}, {$set: {server_handle: new_server_handle}})
-        res.status(200).json({ok: true, msg: 'Server Handle Changed Successfully'})
+
+        await Server.findOneAndUpdate({ server_handle: req.params.server_handle }, { $set: { server_handle: new_server_handle } })
+        res.status(200).json({ ok: true, msg: 'Server Handle Changed Successfully' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
 // Update Description
 export const updateDescription = async (req, res) => {
     try {
-        const {server_handle, description} = req.body;
+        const { description } = req.body;
 
-        const isServerExists = await Server.findOne({server_handle})
-        if(!isServerExists){
-            return res.status(400).json({ok: false, msg: 'Server not found'})
-        }
-        
-        if(description == ''){
-            return res.status(400).json({ok: false, msg: 'Description is required'})
+        const isServerExists = await Server.findOne({ server_handle: req.params.server_handle })
+        if (!isServerExists) {
+            return res.status(400).json({ ok: false, msg: 'Server not found' })
         }
 
-        await Server.findOneAndUpdate({server_handle},{$set: {description}})
-        
-        res.status(200).json({ok: true, msg: 'Server Description Changed Successfully'})
+        if (description == '') {
+            return res.status(400).json({ ok: false, msg: 'Description is required' })
+        }
+
+        await Server.findOneAndUpdate({ server_handle: req.params.server_handle }, { $set: { description } })
+
+        res.status(200).json({ ok: true, msg: 'Server Description Changed Successfully' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
 // Add Server Links
 export const addServerLinks = async (req, res) => {
     try {
-        const {name, url, server_handle} = req.body;
+        const { name, url } = req.body;
 
-        if(name == ''){
-            return res.status(400).json({ok: false, msg: 'URL name is required'})
+        if (name == '') {
+            return res.status(400).json({ ok: false, msg: 'URL name is required' })
         }
 
-        if(url == ''){
-            return res.status(400).json({ok: false, msg: 'URL is required'})
+        if (url == '') {
+            return res.status(400).json({ ok: false, msg: 'URL is required' })
         }
 
-        const isServerExists = await Server.findOne({server_handle})
-        if(!isServerExists){
-            return res.status(404).json({ok: false, msg:'Server Not Found'})
+        const isServerExists = await Server.findOne({ server_handle: req.params.server_handle })
+        if (!isServerExists) {
+            return res.status(404).json({ ok: false, msg: 'Server Not Found' })
         }
 
-        const isAdded = await Server.findOneAndUpdate({server_handle}, {$push: {links: {
-            name,
-            url
-        }}})
+        const isAdded = await Server.findOneAndUpdate({ server_handle: req.params.server_handle }, {
+            $push: {
+                links: {
+                    name,
+                    url
+                }
+            }
+        })
 
-        if(!isAdded){
-            return res.status(400).json({ok: false, msg: 'Unable to add link'})
+        if (!isAdded) {
+            return res.status(400).json({ ok: false, msg: 'Unable to add link' })
         }
 
-        res.status(200).json({ok: true, msg: 'Links Added Successfully'})
+        res.status(200).json({ ok: true, msg: 'Links Added Successfully' })
 
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}
+
+// Edit Server Links
+export const editServerLinks = async (req, res) => {
+    try {
+        const { name, url } = req.body;
+
+        if (name == '' || url == "") {
+            return res.status(400).json({ ok: false, msg: 'Name and Url is required' })
+        }
+
+        const isServerExists = await Server.findOne({ server_handle: req.params.server_handle })
+        if (!isServerExists) {
+            return res.status(404).json({ ok: false, msg: 'Server Not Found' })
+        }
+
+        const isUpdated = await Server.findOneAndUpdate(
+            { server_handle: req.params.server_handle, 'links._id': req.params.link_id }, // Find server and specific link by link's _id
+            {
+                $set: {
+                    'links.$.name': name,  // Update name
+                    'links.$.url': url,    // Update url
+                }
+            },
+            { new: true }
+        );
+
+        if(!isUpdated){
+            return res.status(400).json({ok: false, msg: 'Unable to update link'})
+        }
+
+        res.status(400).json({ ok: true, msg: 'Link Updated Successfully' })
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
 // Create Role
 export const createRole = async (req, res) => {
     try {
-        const {server_handle, role, color} = req.body
+        const { role, color } = req.body
 
-        const isServerExists = await Server.findOne({server_handle})
-        if(!isServerExists){
-            return res.status(400).json({ok: false, msg: 'Server Not Found'})
+        const isServerExists = await Server.findOne({ server_handle: req.params.server_handle })
+        if (!isServerExists) {
+            return res.status(400).json({ ok: false, msg: 'Server Not Found' })
         }
 
-        if(role == '' || color == ''){
-            return res.status(400).json({ok: false, msg: 'Role and Color is required'})
+        if (role == '' || color == '') {
+            return res.status(400).json({ ok: false, msg: 'Role and Color is required' })
         }
 
-        const isRoleCreated = await Server.findOneAndUpdate({server_handle}, {$push: {roles: {role, color}}})
-        if(!isRoleCreated){
-            return res.status(400).json({ok: false, msg: 'Unable to create role'})
+        const isRoleCreated = await Server.findOneAndUpdate({ server_handle: req.params.server_handle }, { $push: { roles: { role, color } } })
+        if (!isRoleCreated) {
+            return res.status(400).json({ ok: false, msg: 'Unable to create role' })
         }
-        res.status(200).json({ok: true, msg: 'Role Created Successfully'})
+        res.status(200).json({ ok: true, msg: 'Role Created Successfully' })
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
-// Create Category
-export const createCategory = async (req, res)=>{
+// Edit Role
+export const editRole = async (req, res) => {
     try {
-        const {server_handle, category_name}= req.body;
+        const {role, color} = req.body;
 
-        const isServerExists = await Server.findOne({server_handle})
+        if(role === '' || color === ''){
+            return res.status(400).json({ok: false, msg: 'Role and Color are required'})
+        }
+
+        const isServerExists = await Server.findOne({server_handle: req.params.server_handle})
         if(!isServerExists){
             return res.status(404).json({ok: false, msg: 'Server Not Found'})
         }
 
-        if(category_name == ''){
-            return res.status(400).json({ok: false, msg: 'Category Name is required'})
-        }
-        
-        const isCreated = await Category.create({
-            server_id: isServerExists._id,
-            category_name
-        })
+        const isUpdated = await Server.findOneAndUpdate({server_handle: req.params.server_handle, 'roles._id': req.params.role_id}, {
+            $set: {
+                'roles.$.role': role,
+                'roles.$.color': color
+            }
+        }, {new: true})
 
-        if(!isCreated){
-            return res.status(400).json({ok: false, msg: 'Unable to create category'})
+        if(!isUpdated){
+            return res.status(400).json({ok: false, msg: 'Unable to update role'})
         }
 
-        await isServerExists.updateOne({$push: {categories: isCreated._id}})
-        await isServerExists.save()
-
-        res.status(200).json({ok: true, msg: 'Category created successfully'})
+        res.status(200).json({ok: true, msg: 'Role updated successfully'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
 
-// Create Channel
-export const createChannel = async (req, res)=>{
+// Delete Role
+export const deleteRole = async (req, res) =>{
     try {
-        const {category_id, channel_name, is_private}= req.body;
-
-        const isCategoryExists = await Category.findById(category_id)
-        if(!isCategoryExists){
-            return res.status(404).json({ok: false, msg: 'Category Not Found'})
-        }
-
-        if(channel_name == ''){
-            return res.status(400).json({ok: false, msg: 'Channel Name is required'})
-        }
-        
-        const isCreated = await Channel.create({
-            server_id: isCategoryExists.server_id,
-            category_id,
-            channel_name,
-            is_private
+        const isDeleted = await Server.findOneAndUpdate({server_handle: req.params.server_handle}, {
+            $pull: {
+                'roles':{
+                    _id: req.params.role_id
+                }
+            }
         })
 
-        if(!isCreated){
-            return res.status(400).json({ok: false, msg: 'Unable to create channel'})
+        if(!isDeleted){
+            res.status(400).json({ok: false, msg: 'Unable to delete role'})
         }
 
-        await isCategoryExists.updateOne({$push: {channels: isCreated._id}})
-        await isCategoryExists.save()
-
-        res.status(200).json({ok: true, msg: 'Category created successfully'})
+        res.status(200).json({ok: true, msg: 'Role deleted successfully'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)
         }
-        res.status(500).json({ok: false, msg: 'Server Error'})
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}
+
+// Delete Link
+export const deleteLink = async (req, res) =>{
+    try {
+        const isDeleted = await Server.findOneAndUpdate({server_handle: req.params.server_handle}, {
+            $pull: {
+                'links':{
+                    _id: req.params.link_id
+                }
+            }
+        })
+
+        if(!isDeleted){
+            res.status(400).json({ok: false, msg: 'Unable to delete link'})
+        }
+
+        res.status(200).json({ok: true, msg: 'Link deleted successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }

@@ -14,8 +14,10 @@ import {
     updateHandleRequest,
     addServerLinks,
     createRole,
-    createCategory,
-    createChannel
+    editServerLinks,
+    editRole,
+    deleteRole,
+    deleteLink
 } from "../controller/ServerController.js";
 
 
@@ -23,28 +25,33 @@ import {
 router.post('/create_server', isLoggedIn, createServer)
 
 // Update Server Name Route: Login Required
-router.put('/update/name', isLoggedIn, updateName)
+router.put('/edit/:server_handle/name', isLoggedIn, updateName)
 
 // Update Server Description Route: Login Required
-router.put('/update/description', isLoggedIn, updateDescription)
+router.put('/edit/:server_handle/description', isLoggedIn, updateDescription)
 
 // Update Server Handle Request Route: Login Required
-router.put('/update/handle_request', isLoggedIn, updateHandleRequest)
+router.put('/edit/:server_handle/handle_request', isLoggedIn, updateHandleRequest)
 
 // Update Server Handle Route: Login Required
-router.put('/update/handle', isLoggedIn, updateHandle)
+router.put('/edit/:server_handle/handle', isLoggedIn, updateHandle)
 
 // Add Server Links Route: Login Required
-router.post('/add/links', isLoggedIn, addServerLinks)
+router.post('/add/:server_handle/links', isLoggedIn, addServerLinks)
 
-// Create a Role: Login Required
-router.post('/create_role', isLoggedIn, createRole)
+// Edit Links Route: Login Required
+router.put('/edit/:server_handle/link/:link_id', isLoggedIn, editServerLinks)
 
-// Create a Category: Login Required
-router.post('/create_category', isLoggedIn, createCategory)
+// Create a Role Route: Login Required
+router.post('/add/:server_handle/create_role', isLoggedIn, createRole)
 
-// Create a Channel: Login Required
-router.post('/create_channel', isLoggedIn, createChannel)
+// Edit a Role Route: Login Required
+router.put('/edit/:server_handle/role/:role_id', isLoggedIn, editRole)
 
+// Delete Role Route: Login Required
+router.delete('/:server_handle/role/:role_id', isLoggedIn, deleteRole)
+
+// Delete Server Link Route: Login Required
+router.delete('/:server_handle/link/:link_id', isLoggedIn, deleteLink)
 
 export default router;

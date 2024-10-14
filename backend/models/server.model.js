@@ -27,14 +27,12 @@ const serverSchema = new Schema({
             },
             role: [String], // Role can stay as it is, no ref needed
         }],
-        _id: false,
     },
     roles: {
         type: [{
             role: String,
             color: String,
         }],
-        _id: false,
         default: [{ 
             role: 'member',
             color: '#FFFFFF',
@@ -47,7 +45,6 @@ const serverSchema = new Schema({
             files: Boolean,
             manage_account: Boolean,
             private_channel_access: Boolean,
-            _id: false,
         }],
         default: {
             role: 'member',
@@ -69,7 +66,6 @@ const serverSchema = new Schema({
         type: [{
             name: String,
             url: String,
-            _id: false,
         }],
     },
 }, { timestamps: true });

@@ -12,7 +12,8 @@ import { connectMongoDB } from './db/connectMongoDB.js'
 import authRoute from './routes/AuthRoute.js'
 import userRoute from './routes/UserRoute.js'
 import serverRoute from './routes/ServerRoute.js'
-
+import categoryRoute from './routes/CategoryRoute.js'
+import channelRoute from './routes/ChannelRoute.js'
 
 
 const app = express()
@@ -41,6 +42,12 @@ app.use('/api/user', userRoute)
 
 // Server
 app.use('/api/server', serverRoute)
+
+// Category
+app.use('/api/category', categoryRoute)
+
+// Channel
+app.use('/api/channel', channelRoute)
 
 
 
