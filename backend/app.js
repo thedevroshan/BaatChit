@@ -14,6 +14,7 @@ import userRoute from './routes/UserRoute.js'
 import serverRoute from './routes/ServerRoute.js'
 import categoryRoute from './routes/CategoryRoute.js'
 import channelRoute from './routes/ChannelRoute.js'
+import roleRoute from './routes/RoleRoute.js'
 
 
 const app = express()
@@ -48,6 +49,9 @@ app.use('/api/category', categoryRoute)
 
 // Channel
 app.use('/api/channel', channelRoute)
+
+// Channel
+app.use('/api/role', roleRoute)
 
 
 

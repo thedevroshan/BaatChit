@@ -7,12 +7,20 @@ import { isLoggedIn } from "../middleware/isLoggedIn.js";
 
 // Controller
 import { 
-    createCategory
+    createCategory,
+    editCategoryName,
+    deleteCategory
 } from "../controller/CategoryController.js";
 
 
 // Create a Category: Login Required
 router.post('/:server_handle/create_category', isLoggedIn, createCategory)
+
+// Edit name of category route: Login Required
+router.put('/edit/:category_id/name', isLoggedIn, editCategoryName)
+
+// Delete Category Route: Login Required
+router.delete('/:category_id', isLoggedIn, deleteCategory)
 
 
 

@@ -29,30 +29,8 @@ const serverSchema = new Schema({
         }],
     },
     roles: {
-        type: [{
-            role: String,
-            color: String,
-        }],
-        default: [{ 
-            role: 'member',
-            color: '#FFFFFF',
-        }],
-    },
-    roles_permission: {
-        type: [{
-            role: String,
-            text: Boolean,
-            files: Boolean,
-            manage_account: Boolean,
-            private_channel_access: Boolean,
-        }],
-        default: {
-            role: 'member',
-            text: true,
-            files: true,
-            manage_account: false,
-            private_channel_access: false
-        }
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Role'
     },
     server_icon: {
         type: String,
