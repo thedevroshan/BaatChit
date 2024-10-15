@@ -25,12 +25,12 @@ const rolesSchema = new Schema({
     manage_account: {
         type: Boolean,
         required: true,
-        default: false,
+        default: false
     },
     private_channel_access: {
         type: Boolean,
         required: true,
-        default: false,
+        default: false
     },
     server_id: {
         type: mongoose.Schema.Types.ObjectId,

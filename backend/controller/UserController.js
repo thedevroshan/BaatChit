@@ -205,3 +205,62 @@ export const resetPassword  = async (req, res) => {
         res.status(500).json({ok: false, msg: 'Server Error'})
     }
 }
+
+// Update Links
+export const updateLinks = async (req, res) => {
+    try {
+        if(req.body.url_name == '' && req.body.url == ''){
+            return res.status(400).json({ok: false, msg: 'URL name and URL are required'})
+        }
+
+        const user = await User.findById(req.user.id)
+
+
+        if(user.links.some(item => item._id == req.params.link_id)){
+            const isUpdated = await User.updateOne(
+                {
+                    _id: req.user.id,
+                    "links._id": req.params.link_id
+                },
+                {
+                    $set: {
+                        'links.$.url_name': req.body.url_name,
+                        'links.$.url': req.body.url
+                    }
+                }
+            )
+
+            if(!isUpdated){
+                return res.status(400).json({ok: false, msg: 'Unable to update link'})
+            }
+            
+            return res.status(400).json({ok: true, msg: 'Link updated successfully'})
+        }
+        else {
+            const isAdded = await User.updateOne(
+                {
+                    _id: req.user.id,
+                },
+                {
+                    $push: {
+                        links: {
+                            url_name: req.body.url_name,
+                            url: req.body.url
+                        }
+                    }
+                }
+            )
+
+            if(!isAdded){
+                return res.status(400).json({ok: false, msg: 'Unable to add link'})
+            }
+
+            return res.status(400).json({ok: true, msg: 'Link Added Successfully'})
+        }
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ok: false, msg: 'Server Error'})
+    }
+}

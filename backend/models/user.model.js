@@ -40,9 +40,10 @@ const userSchema = new Schema({
         default: ''
     },
     links: {
-        type: Map,
-        of: String,
-        default: {}
+        type: [{
+            url_name: String,
+            url: String
+        }]
     }
 }, {timestamps: true})
 

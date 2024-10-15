@@ -4,6 +4,7 @@ import { configuration } from "../config/config.js";
 // Models
 import { Category } from "../models/category.model.js";
 import { Channel } from "../models/channel.model.js";
+import { Role } from '../models/roles.model.js'
 
 // Create Channel
 export const createChannel = async (req, res) => {
@@ -19,11 +20,13 @@ export const createChannel = async (req, res) => {
             return res.status(400).json({ ok: false, msg: 'Channel Name is required' })
         }
 
+        const memberRole = await Role.findOne({server_id: isCategoryExists.server_id, role: 'member'})
+
         const isCreated = await Channel.create({
             server_id: isCategoryExists.server_id,
             category_id: req.params.category_id,
             channel_name,
-            allowed_roles: is_private?'':'member',
+            allowed_roles: is_private?[]:[memberRole._id],
             is_private
         })
 
@@ -87,6 +90,89 @@ export const editChannelVisibility = async (req,res) =>{
         }
 
         res.status(200).json({ok: true, msg:'Channel Visibility updated successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}
+
+// Add Roles
+export const addRoles = async (req, res) => {
+    try {
+        const isChannel = await Channel.findById(req.params.channel_id)
+        if(!isChannel){
+            return res.status(400).json({ok: false, msg: 'Channel Not Found'})
+        }
+
+        const isRole = await Role.findById(req.params.role_id)
+        if(!isRole){
+            return res.status(400).json({ok: false, msg: 'Role Not Found'})
+        }
+
+        if(isChannel.is_private && !isRole.private_channel_access){
+            return res.status(400).json({ok: false, msg: `${isRole.role} has not the permission to access private channels`})
+        }
+
+        isChannel.allowed_roles.push(isRole._id)
+        await isChannel.save()
+
+        res.status(200).json({ok: true, msg: 'Role added successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}
+
+// Remove Role
+export const removeRole = async (req, res) => {
+    try {
+        const isChannel = await Channel.findById(req.params.channel_id)
+        if(!isChannel){
+            return res.status(400).json({ok: false, msg: 'Channel Not Found'})
+        }
+
+        const isRole = await Role.findById(req.params.role_id)
+        if(!isRole){
+            return res.status(400).json({ok: false, msg: 'Role Not Found'})
+        }
+
+        isChannel.allowed_roles.pull(isRole._id)
+        await isChannel.save()
+
+        res.status(400).json({ok: true, msg: 'Role removed successfully'})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}
+
+// Delete Channel
+export const deleteChannel = async (req, res) => {
+    try {
+        const isChannel = await Channel.findById(req.params.channel_id)
+
+        const isCategoryExists = await Category.findByIdAndUpdate(isChannel.category_id, {
+            $pull: {
+                channels: isChannel._id
+            }
+        })
+
+        if(!isCategoryExists){
+            return res.status(400).json({ok: false, msg: 'Unable to delete channel'})
+        }
+
+        const isDeleted = await Channel.findByIdAndDelete(isChannel._id)
+        if(!isDeleted){
+            return res.status(400).json({ok: false, msg: 'Unable to delete channel'})
+        }
+
+        res.status(400).json({ok: true, msg: 'Channel deleted successfully'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)

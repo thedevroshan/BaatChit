@@ -70,23 +70,21 @@ export const editCategoryName = async (req,res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const isCategory = await Category.findById(req.params.category_id)
-        const isServerExists = await Server.findByIdAndUpdate(isCategory.server_id, {
+        const isServerUpdated = await Server.findByIdAndUpdate(isCategory.server_id, {
             $pull: {
                 categories: isCategory._id
             }
         })
 
-        if(!isServerExists){
+        if(!isServerUpdated){
             return res.status(400).json({ ok: false, msg: 'Unable to delete role' })
         }
 
-        if(isServerExists){
-            const isDeleted = await Category.findByIdAndDelete(isCategory._id)
-            if (!isDeleted) {
-                return res.status(400).json({ ok: false, msg: 'Unable to delete role' })
-            }
-            res.status(400).json({ok: true, msg: 'Category deleted successfully'})
+        const isDeleted = await Category.findByIdAndDelete(isCategory._id)
+        if (!isDeleted) {
+            return res.status(400).json({ ok: false, msg: 'Unable to delete role' })
         }
+        res.status(400).json({ok: true, msg: 'Category deleted successfully'})
     } catch (error) {
         if (configuration.IS_DEV_ENV) {
             return console.log(error)

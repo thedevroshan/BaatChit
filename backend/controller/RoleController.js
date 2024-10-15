@@ -4,12 +4,11 @@ import { configuration } from "../config/config.js"
 // Models
 import { Server } from '../models/server.model.js'
 import { Role } from '../models/roles.model.js'
-import { Category } from "../models/category.model.js"
 
 // Create Role
 export const createRole = async (req, res) => {
     try {
-        const { role, color } = req.body
+        const { role, color, private_channel_access, manage_account } = req.body
 
         if (role == '' || color == '') {
             return res.status(400).json({ ok: true, msg: 'Role and Color are required' })
@@ -24,7 +23,9 @@ export const createRole = async (req, res) => {
         const isCreated = await Role.create({
             role,
             color,
-            server_id: isServerExists._id            
+            server_id: isServerExists._id,
+            private_channel_access,
+            manage_account       
         })
 
         if(!isCreated){
@@ -53,7 +54,7 @@ export const createRole = async (req, res) => {
 // Edit Role
 export const editRole = async (req, res) => {
     try {
-        const { role, color } = req.body;
+        const { role, color, private_channel_access, manage_account } = req.body;
 
         if (role === '' || color === '') {
             return res.status(400).json({ ok: false, msg: 'Role and Color are required' })
@@ -62,7 +63,9 @@ export const editRole = async (req, res) => {
         const isUpdated = await Role.findByIdAndUpdate(req.params.role_id, {
             $set: {
                 role,
-                color
+                color,
+                manage_account,
+                private_channel_access
             }
         })
 

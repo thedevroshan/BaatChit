@@ -14,7 +14,8 @@ import {
     updateHandleRequest,
     addServerLinks,
     editServerLinks,
-    deleteLink
+    deleteLink,
+    deleteServer
 } from "../controller/ServerController.js";
 
 
@@ -41,5 +42,8 @@ router.put('/edit/:server_handle/link/:link_id', isLoggedIn, editServerLinks)
 
 // Delete Server Link Route: Login Required
 router.delete('/:server_handle/link/:link_id', isLoggedIn, deleteLink)
+
+// Delete Server Route: Login Required
+router.delete('/:server_handle', isLoggedIn, deleteServer)
 
 export default router;

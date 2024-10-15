@@ -17,8 +17,8 @@ const channelSchema = new Schema({
         required: true,
     },
     allowed_roles: {
-        type: [String],
-        default: 'member'
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Role'
     },
     is_private:{
         type: Boolean,

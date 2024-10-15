@@ -12,7 +12,8 @@ import {
     updateBio, 
     updatePassword,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    updateLinks
 } from "../controller/UserController.js";
 
 // Uitls
@@ -40,6 +41,9 @@ router.put('/updateprofile/bio', isLoggedIn, updateBio)
 
 // Update User Profile Route: Login Required
 router.put('/updateprofile/password',PasswordValidation, isLoggedIn, updatePassword)
+
+// Reset Password: No Login Required
+router.post('/updateprofile/links/:link_id',isLoggedIn, updateLinks)
 
 // Forget Password: No Login Required
 router.post('/forgetpassword', forgetPassword)
