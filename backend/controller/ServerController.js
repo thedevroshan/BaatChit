@@ -339,3 +339,30 @@ export const deleteServer = async (req, res) => {
         res.status(500).json({ ok: false, msg: 'Server Error' })
     }
 }
+
+// Get Server
+export const getUserAllServer = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+        if(user.owned_server.length == 0){
+            return res.status(200).json({ok: true, msg: 'No Servers'})
+        }
+
+        const servers = []
+        await Promise.all(user.owned_server.map(async (server)=>{
+            const isServer = await Server.findById(server)
+            if(!isServer){
+                return res.status(404).json({ok: false, msg: 'Server Not Found'})
+            }
+
+            servers.push(isServer)
+        }))
+
+        res.status(200).json({ok: true, msg: 'Listed All The Servers', data: servers})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ ok: false, msg: 'Server Error' })
+    }
+}

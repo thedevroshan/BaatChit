@@ -15,7 +15,8 @@ import {
     addServerLinks,
     editServerLinks,
     deleteLink,
-    deleteServer
+    deleteServer,
+    getUserAllServer
 } from "../controller/ServerController.js";
 
 
@@ -45,5 +46,8 @@ router.delete('/:server_handle/link/:link_id', isLoggedIn, deleteLink)
 
 // Delete Server Route: Login Required
 router.delete('/:server_handle', isLoggedIn, deleteServer)
+
+// Get Server Route: Login Required
+router.get('/getuserallserver', isLoggedIn, getUserAllServer)
 
 export default router;

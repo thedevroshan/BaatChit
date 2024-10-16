@@ -92,3 +92,20 @@ export const deleteCategory = async (req, res) => {
         res.status(500).json({ok: false, msg: 'Server Error'})
     }
 }
+
+// Delete Category
+export const getUserAllCategories = async (req, res) => {
+    try {
+        const categories = await Category.find({server_id: req.params.server_id})
+        if(!categories){
+            return res.status(200).json({ok: true, msg: 'No Catgories'})
+        }
+
+        res.status(400).json({ok: true, msg: 'Listed All The Categories', data: categories})
+    } catch (error) {
+        if (configuration.IS_DEV_ENV) {
+            return console.log(error)
+        }
+        res.status(500).json({ok: false, msg: 'Server Error'})
+    }
+}

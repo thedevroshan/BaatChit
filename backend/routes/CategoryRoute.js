@@ -9,7 +9,8 @@ import { isLoggedIn } from "../middleware/isLoggedIn.js";
 import { 
     createCategory,
     editCategoryName,
-    deleteCategory
+    deleteCategory,
+    getUserAllCategories
 } from "../controller/CategoryController.js";
 
 
@@ -22,6 +23,8 @@ router.put('/edit/:category_id/name', isLoggedIn, editCategoryName)
 // Delete Category Route: Login Required
 router.delete('/:category_id', isLoggedIn, deleteCategory)
 
+// Get User All Categories
+router.get('/:server_id/getuserallcategories', isLoggedIn, getUserAllCategories)
 
 
 export default router;
